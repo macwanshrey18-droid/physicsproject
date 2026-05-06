@@ -1,0 +1,1714 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PaperTrail — Stationery Shop Manager</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --ink: #1C1612;
+      --ink-soft: #4A3F35;
+      --ink-muted: #8C7B6E;
+      --cream: #F7F2EA;
+      --cream-deep: #EDE4D4;
+      --cream-border: #D9CEBC;
+      --amber: #C8762A;
+      --amber-light: #F0C07A;
+      --amber-pale: #FDF3E3;
+      --green: #3A6B4A;
+      --green-pale: #EAF3EE;
+      --red: #9B3A3A;
+      --red-pale: #FDEAEA;
+      --blue: #2D5F8A;
+      --blue-pale: #EAF2FB;
+      --white: #FFFDF9;
+      --shadow-sm: 0 1px 3px rgba(28, 22, 18, 0.08);
+      --shadow-md: 0 4px 16px rgba(28, 22, 18, 0.10);
+      --shadow-lg: 0 8px 32px rgba(28, 22, 18, 0.13);
+      --r: 10px;
+      --r-lg: 16px;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 240px;
+      background: var(--ink);
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+      padding: 0;
+    }
+
+    .logo-area {
+      padding: 2rem 1.75rem 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .logo-icon {
+      width: 38px;
+      height: 38px;
+      background: var(--amber);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.9rem;
+    }
+
+    .logo-icon svg {
+      width: 20px;
+      height: 20px;
+      fill: white;
+    }
+
+    .logo-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+
+    .logo-tag {
+      font-size: 11px;
+      color: var(--ink-muted);
+      margin-top: 3px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .nav {
+      flex: 1;
+      padding: 1.25rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 400;
+      color: rgba(255, 255, 255, 0.5);
+      transition: all 0.18s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      letter-spacing: 0.01em;
+    }
+
+    .nav-item:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .nav-item.active {
+      background: var(--amber);
+      color: white;
+      font-weight: 500;
+    }
+
+    .nav-item svg {
+      width: 17px;
+      height: 17px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-footer {
+      padding: 1.25rem 1.75rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.25);
+      line-height: 1.5;
+    }
+
+    /* ── MAIN ── */
+    .main {
+      margin-left: 240px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      background: var(--white);
+      border-bottom: 1px solid var(--cream-border);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .topbar-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+    }
+
+    .topbar-sub {
+      font-size: 13px;
+      color: var(--ink-muted);
+      margin-top: 1px;
+    }
+
+    .topbar-date {
+      font-size: 13px;
+      color: var(--ink-muted);
+      background: var(--cream);
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--cream-border);
+    }
+
+    .content {
+      flex: 1;
+      padding: 2rem;
+    }
+
+    /* ── PAGES ── */
+    .page {
+      display: none;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ── METRIC CARDS ── */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .metric-card {
+      background: var(--white);
+      border: 1px solid var(--cream-border);
+      border-radius: var(--r-lg);
+      padding: 1.25rem 1.5rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.18s, box-shadow 0.18s;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--amber);
+      border-radius: var(--r-lg) var(--r-lg) 0 0;
+    }
+
+    .metric-card.green::before {
+      background: var(--green);
+    }
+
+    .metric-card.blue::before {
+      background: var(--blue);
+    }
+
+    .metric-card.red::before {
+      background: var(--red);
+    }
+
+    .metric-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.85rem;
+      font-size: 17px;
+    }
+
+    .metric-icon.amber {
+      background: var(--amber-pale);
+    }
+
+    .metric-icon.green {
+      background: var(--green-pale);
+    }
+
+    .metric-icon.blue {
+      background: var(--blue-pale);
+    }
+
+    .metric-icon.red {
+      background: var(--red-pale);
+    }
+
+    .metric-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ink-muted);
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+
+    .metric-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+
+    .metric-value.green {
+      color: var(--green);
+    }
+
+    .metric-value.amber {
+      color: var(--amber);
+    }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--white);
+      border: 1px solid var(--cream-border);
+      border-radius: var(--r-lg);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 1.25rem;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--cream-deep);
+    }
+
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+    }
+
+    .card-subtitle {
+      font-size: 13px;
+      color: var(--ink-muted);
+      margin-top: 2px;
+    }
+
+    /* ── FORM ── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--ink-soft);
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    input,
+    select,
+    textarea {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--ink);
+      background: var(--cream);
+      border: 1.5px solid var(--cream-border);
+      border-radius: var(--r);
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color 0.18s, box-shadow 0.18s;
+      width: 100%;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--amber);
+      box-shadow: 0 0 0 3px rgba(200, 118, 42, 0.12);
+      background: var(--white);
+    }
+
+    /* ── BUTTONS ── */
+    .btn {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 10px 22px;
+      border-radius: var(--r);
+      border: none;
+      cursor: pointer;
+      transition: all 0.18s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: var(--amber);
+      color: white;
+      box-shadow: 0 2px 8px rgba(200, 118, 42, 0.3);
+    }
+
+    .btn-primary:hover {
+      background: #A85E1E;
+      box-shadow: 0 4px 14px rgba(200, 118, 42, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-ghost {
+      background: var(--cream);
+      color: var(--ink-soft);
+      border: 1.5px solid var(--cream-border);
+    }
+
+    .btn-ghost:hover {
+      background: var(--cream-deep);
+    }
+
+    .btn-danger-sm {
+      font-size: 12px;
+      padding: 5px 12px;
+      background: var(--red-pale);
+      color: var(--red);
+      border: 1px solid rgba(155, 58, 58, 0.2);
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.15s;
+    }
+
+    .btn-danger-sm:hover {
+      background: #f5d5d5;
+    }
+
+    .btn-sell-sm {
+      font-size: 12px;
+      padding: 5px 12px;
+      background: var(--green-pale);
+      color: var(--green);
+      border: 1px solid rgba(58, 107, 74, 0.2);
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.15s;
+    }
+
+    .btn-sell-sm:hover {
+      background: #d5eadc;
+    }
+
+    /* ── TABLE ── */
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    thead th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--ink-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0 10px 10px 0;
+      border-bottom: 1.5px solid var(--cream-deep);
+    }
+
+    tbody td {
+      padding: 12px 10px 12px 0;
+      border-bottom: 1px solid var(--cream-deep);
+      vertical-align: middle;
+      color: var(--ink-soft);
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr:hover td {
+      background: var(--cream);
+    }
+
+    .item-name {
+      font-weight: 500;
+      color: var(--ink);
+      font-size: 14px;
+    }
+
+    .item-cat {
+      display: inline-block;
+      font-size: 11px;
+      padding: 2px 8px;
+      background: var(--cream-deep);
+      color: var(--ink-muted);
+      border-radius: 20px;
+      font-weight: 500;
+    }
+
+    /* ── BADGES ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.02em;
+    }
+
+    .badge-ok {
+      background: var(--green-pale);
+      color: var(--green);
+    }
+
+    .badge-low {
+      background: var(--amber-pale);
+      color: #8a5200;
+    }
+
+    .badge-out {
+      background: var(--red-pale);
+      color: var(--red);
+    }
+
+    /* ── ALERTS ── */
+    .alert {
+      font-size: 13px;
+      padding: 10px 15px;
+      border-radius: var(--r);
+      margin-bottom: 1rem;
+      font-weight: 400;
+      display: none;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .alert.show {
+      display: flex;
+    }
+
+    .alert-success {
+      background: var(--green-pale);
+      color: var(--green);
+      border: 1px solid rgba(58, 107, 74, 0.2);
+    }
+
+    .alert-error {
+      background: var(--red-pale);
+      color: var(--red);
+      border: 1px solid rgba(155, 58, 58, 0.2);
+    }
+
+    /* ── SELL PAGE ── */
+    .sell-preview {
+      background: var(--cream);
+      border: 1.5px dashed var(--cream-border);
+      border-radius: var(--r);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.25rem;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      text-align: center;
+    }
+
+    .sell-preview-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .sell-preview-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--ink-muted);
+      font-weight: 500;
+    }
+
+    .sell-preview-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .sell-preview-value.profit {
+      color: var(--green);
+    }
+
+    /* ── HISTORY ── */
+    .history-entry {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--cream-deep);
+    }
+
+    .history-entry:last-child {
+      border-bottom: none;
+    }
+
+    .history-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--amber);
+      margin-right: 14px;
+      flex-shrink: 0;
+    }
+
+    .history-item-name {
+      font-weight: 500;
+      font-size: 14px;
+      color: var(--ink);
+    }
+
+    .history-meta {
+      font-size: 12px;
+      color: var(--ink-muted);
+      margin-top: 2px;
+    }
+
+    .history-rev {
+      font-family: 'Playfair Display', serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--green);
+    }
+
+    .history-profit-sm {
+      font-size: 12px;
+      color: var(--ink-muted);
+      margin-top: 2px;
+      text-align: right;
+    }
+
+    /* ── CHART BARS ── */
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      font-size: 13px;
+    }
+
+    .bar-name {
+      width: 130px;
+      color: var(--ink-soft);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 13px;
+    }
+
+    .bar-track {
+      flex: 1;
+      height: 8px;
+      background: var(--cream-deep);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      background: var(--amber);
+      transition: width 0.5s ease;
+    }
+
+    .bar-fill.green {
+      background: var(--green);
+    }
+
+    .bar-qty {
+      font-weight: 500;
+      font-size: 13px;
+      color: var(--ink-muted);
+      width: 60px;
+      text-align: right;
+    }
+
+    /* ── EMPTY STATE ── */
+    .empty {
+      text-align: center;
+      padding: 2.5rem 1rem;
+      color: var(--ink-muted);
+      font-size: 14px;
+    }
+
+    .empty-icon {
+      font-size: 32px;
+      margin-bottom: 0.75rem;
+    }
+
+    .empty-text {
+      font-size: 14px;
+      color: var(--ink-muted);
+    }
+
+    .empty-sub {
+      font-size: 12px;
+      color: var(--cream-border);
+      margin-top: 4px;
+    }
+
+    /* ── DASHBOARD GRID ── */
+    .dash-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+
+    /* ── LOW STOCK ROW ── */
+    .low-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--cream-deep);
+    }
+
+    .low-row:last-child {
+      border-bottom: none;
+    }
+
+    .low-name {
+      font-weight: 500;
+      font-size: 13px;
+      color: var(--ink);
+    }
+
+    /* ── QTY INPUT ── */
+    .qty-input {
+      width: 72px !important;
+      padding: 6px 10px !important;
+      font-size: 13px !important;
+      text-align: center;
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--cream-border);
+      border-radius: 3px;
+    }
+
+    /* ── STOCK PILL INPUT ── */
+    .stock-edit {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stock-edit button {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 1.5px solid var(--cream-border);
+      background: var(--cream);
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--ink-soft);
+      transition: all 0.15s;
+      line-height: 1;
+      font-family: monospace;
+    }
+
+    .stock-edit button:hover {
+      background: var(--cream-deep);
+      border-color: var(--amber);
+      color: var(--amber);
+    }
+
+    /* ── PROFILE PAGE ── */
+    .profile-display {
+      margin-bottom: 1.5rem;
+    }
+
+    .profile-card-visual {
+      background: linear-gradient(135deg, #1C1612 0%, #2E2318 60%, #3A2D1E 100%);
+      border-radius: var(--r-lg);
+      padding: 2rem 2.25rem;
+      color: white;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .profile-card-visual::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(200, 118, 42, 0.15) 0%, transparent 70%);
+      border-radius: 50%;
+      transform: translate(40%, -40%);
+    }
+
+    .profile-card-visual::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--amber), var(--amber-light), var(--amber));
+    }
+
+    .profile-card-logo {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      background: var(--amber);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 1rem;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      overflow: hidden;
+    }
+
+    .profile-card-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .profile-card-shopname {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    .profile-card-owner {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 1.25rem;
+      font-weight: 300;
+    }
+
+    .profile-card-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .profile-card-field {}
+
+    .profile-card-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255, 255, 255, 0.35);
+      margin-bottom: 3px;
+      font-weight: 500;
+    }
+
+    .profile-card-value {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.85);
+      font-weight: 400;
+      word-break: break-word;
+    }
+
+    .profile-card-divider {
+      grid-column: span 2;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.08);
+      margin: 0.25rem 0;
+    }
+
+    .profile-logo-upload {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .profile-logo-preview {
+      width: 64px;
+      height: 64px;
+      border-radius: 12px;
+      background: var(--cream-deep);
+      border: 2px dashed var(--cream-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: var(--ink-muted);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .profile-logo-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .profile-logo-upload label {
+      font-size: 13px;
+      color: var(--amber);
+      cursor: pointer;
+      font-weight: 500;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .profile-logo-upload label:hover {
+      color: #A85E1E;
+    }
+
+    .profile-empty {
+      text-align: center;
+      padding: 2.5rem;
+      color: var(--ink-muted);
+    }
+
+    .profile-empty-icon {
+      font-size: 40px;
+      margin-bottom: 0.75rem;
+    }
+
+    .profile-empty-text {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--ink-soft);
+    }
+
+    .profile-empty-sub {
+      font-size: 13px;
+      color: var(--ink-muted);
+      margin-top: 4px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo-area">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+        </svg>
+      </div>
+      <div class="logo-name">PaperTrail</div>
+      <div class="logo-tag">Stationery Manager</div>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-item active" onclick="goPage('dashboard', this)">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" />
+        </svg>
+        Dashboard
+      </button>
+      <button class="nav-item" onclick="goPage('inventory', this)">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M20 6h-2.18c.07-.44.18-.88.18-1.35C18 2.09 15.91 0 13.35 0c-1.3 0-2.48.56-3.35 1.44C9.13.56 7.95 0 6.65 0 4.09 0 2 2.09 2 4.65c0 .47.11.91.18 1.35H0v14h20V6zm-6.65-4c.91 0 1.65.74 1.65 1.65 0 .91-.74 1.65-1.65 1.65-.91 0-1.65-.74-1.65-1.65C11.7 2.74 12.44 2 13.35 2zM6.65 2c.91 0 1.65.74 1.65 1.65 0 .91-.74 1.65-1.65 1.65C5.74 5.3 5 4.56 5 3.65 5 2.74 5.74 2 6.65 2zM2 18V8h7v10H2zm9 0V8h7v10h-7z" />
+        </svg>
+        Inventory
+      </button>
+      <button class="nav-item" onclick="goPage('sell', this)">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96C5 16.1 6.1 17 7.44 17H19v-2H7.85c-.17 0-.3-.13-.3-.3l.03-.12.9-1.63H15c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0019.44 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" />
+        </svg>
+        Record Sale
+      </button>
+      <button class="nav-item" onclick="goPage('history', this)">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0013 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z" />
+        </svg>
+        Sales History
+      </button>
+      <button class="nav-item" onclick="goPage('profile', this)">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z" />
+        </svg>
+        Shop Profile
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span id="sidebar-shop-name">&copy; 2025 PaperTrail</span><br>All data stored locally
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="page-title">Dashboard</div>
+        <div class="topbar-sub" id="page-sub">Overview of your shop</div>
+      </div>
+      <div class="topbar-date" id="topbar-date"></div>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div id="page-dashboard" class="page active">
+        <div class="metrics-grid" id="metrics"></div>
+        <div class="dash-grid">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Top Selling Items</div>
+                <div class="card-subtitle">by units sold</div>
+              </div>
+            </div>
+            <div id="top-items">
+              <div class="empty">
+                <div class="empty-icon">📊</div>
+                <div class="empty-text">No sales yet</div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Stock Alerts</div>
+                <div class="card-subtitle">low & out of stock items</div>
+              </div>
+            </div>
+            <div id="low-stock">
+              <div class="empty">
+                <div class="empty-icon">✅</div>
+                <div class="empty-text">All items well stocked</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INVENTORY -->
+      <div id="page-inventory" class="page">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Add New Item</div>
+              <div class="card-subtitle">Fill in all fields to add stock</div>
+            </div>
+          </div>
+          <div class="alert alert-success" id="inv-ok">✓ Item added successfully!</div>
+          <div class="alert alert-error" id="inv-err"></div>
+          <div class="form-grid">
+            <div class="form-group" style="grid-column: span 2;">
+              <label class="form-label">Item Name</label>
+              <input id="i-name" placeholder="e.g. Apsara Platinum Pencil">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <select id="i-cat">
+                <option>Writing</option>
+                <option>Paper & Notebooks</option>
+                <option>Filing & Storage</option>
+                <option>Art Supplies</option>
+                <option>Office Supplies</option>
+                <option>Geometry & Math</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Cost Price (₹)</label>
+              <input id="i-cost" type="number" min="0" step="0.01" placeholder="0.00">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Selling Price (₹)</label>
+              <input id="i-price" type="number" min="0" step="0.01" placeholder="0.00">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Quantity in Stock</label>
+              <input id="i-qty" type="number" min="0" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Low Stock Alert Below</label>
+              <input id="i-low" type="number" min="1" placeholder="5">
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="addItem()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+            </svg>
+            Add to Inventory
+          </button>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Current Inventory</div>
+              <div class="card-subtitle" id="inv-count">0 items</div>
+            </div>
+            <input placeholder="Search items..." style="width:200px;font-size:13px;padding:7px 12px"
+              oninput="filterInventory(this.value)">
+          </div>
+          <div class="table-wrap" id="inv-table">
+            <div class="empty">
+              <div class="empty-icon">📦</div>
+              <div class="empty-text">No items yet</div>
+              <div class="empty-sub">Add your first product above</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SELL -->
+      <div id="page-sell" class="page">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Record a Sale</div>
+              <div class="card-subtitle">Select item, enter quantity and confirm</div>
+            </div>
+          </div>
+          <div class="alert alert-success" id="sell-ok"></div>
+          <div class="alert alert-error" id="sell-err"></div>
+
+          <div class="form-grid">
+            <div class="form-group" style="grid-column: span 2;">
+              <label class="form-label">Select Item</label>
+              <select id="s-item" onchange="updateSell()">
+                <option value="">— choose an item —</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Quantity</label>
+              <input id="s-qty" type="number" min="1" value="1" oninput="updateSell()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Selling Price (₹)</label>
+              <input id="s-price" type="number" min="0" step="0.01" placeholder="auto-filled" oninput="updateSell()">
+            </div>
+          </div>
+
+          <div class="sell-preview" id="sell-preview">
+            <div class="sell-preview-item">
+              <div class="sell-preview-label">Revenue</div>
+              <div class="sell-preview-value" id="prev-rev">₹0.00</div>
+            </div>
+            <div class="sell-preview-item">
+              <div class="sell-preview-label">Profit</div>
+              <div class="sell-preview-value profit" id="prev-profit">₹0.00</div>
+            </div>
+            <div class="sell-preview-item">
+              <div class="sell-preview-label">In Stock</div>
+              <div class="sell-preview-value" id="prev-stock">—</div>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" onclick="recordSale()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+            </svg>
+            Confirm Sale
+          </button>
+        </div>
+      </div>
+
+      <!-- HISTORY -->
+      <div id="page-history" class="page">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Sales History</div>
+              <div class="card-subtitle" id="hist-count">0 transactions</div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:center">
+              <div id="hist-total"
+                style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--green)">₹0.00
+              </div>
+              <div style="font-size:12px;color:var(--ink-muted)">total revenue</div>
+            </div>
+          </div>
+          <div id="history-list">
+            <div class="empty">
+              <div class="empty-icon">🧾</div>
+              <div class="empty-text">No sales recorded yet</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROFILE -->
+      <div id="page-profile" class="page">
+        <div id="profile-display"></div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Shop Details</div>
+              <div class="card-subtitle">Your business information &amp; registration</div>
+            </div>
+          </div>
+          <div class="alert alert-success" id="prof-ok">✓ Profile saved!</div>
+          <div class="alert alert-error" id="prof-err"></div>
+
+          <div class="form-grid">
+            <div class="form-group" style="grid-column: span 2;">
+              <label class="form-label">Shop Logo</label>
+              <div class="profile-logo-upload">
+                <div class="profile-logo-preview" id="logo-preview">🏪</div>
+                <div>
+                  <label for="p-logo">Upload logo image</label>
+                  <input type="file" id="p-logo" accept="image/*" style="display:none" onchange="previewLogo(this)">
+                  <div style="font-size:11px;color:var(--ink-muted);margin-top:4px">PNG or JPG, max 200KB</div>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Shop Name</label>
+              <input id="p-name" placeholder="e.g. Sharma Stationery Mart">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Owner / Proprietor</label>
+              <input id="p-owner" placeholder="e.g. Rajesh Sharma">
+            </div>
+            <div class="form-group">
+              <label class="form-label">GST Identification No. (GSTIN)</label>
+              <input id="p-gst" placeholder="e.g. 27AABCU9603R1ZM" maxlength="15" style="text-transform:uppercase">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Shop Registration No.</label>
+              <input id="p-reg" placeholder="e.g. SHOP/MH/2024/12345">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone Number</label>
+              <input id="p-phone" type="tel" placeholder="e.g. +91 98765 43210">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <input id="p-email" type="email" placeholder="e.g. shop@example.com">
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+              <label class="form-label">Shop Address</label>
+              <textarea id="p-address" rows="3" placeholder="Full address including city, state and PIN code"
+                style="resize:vertical"></textarea>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="saveProfile()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z" />
+            </svg>
+            Save Profile
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    // ── STATE ──
+    let items = [];
+    let sales = [];
+    let shopProfile = null;
+    let filterQ = '';
+    let logoDataUrl = '';
+
+    // ── INDEXEDDB ──
+    let db = null;
+    function dbOpen() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open('PaperTrailDB', 1);
+        req.onupgradeneeded = e => {
+          const d = e.target.result;
+          if (!d.objectStoreNames.contains('items')) d.createObjectStore('items', { keyPath: 'id' });
+          if (!d.objectStoreNames.contains('sales')) d.createObjectStore('sales', { keyPath: 'id' });
+          if (!d.objectStoreNames.contains('profile')) d.createObjectStore('profile', { keyPath: 'id' });
+        };
+        req.onsuccess = e => { db = e.target.result; resolve(db); };
+        req.onerror = e => reject(e.target.error);
+      });
+    }
+    function dbGetAll(store) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(store, 'readonly');
+        const req = tx.objectStore(store).getAll();
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = e => reject(e.target.error);
+      });
+    }
+    function dbPut(store, data) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(store, 'readwrite');
+        const req = tx.objectStore(store).put(data);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = e => reject(e.target.error);
+      });
+    }
+    function dbDelete(store, key) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(store, 'readwrite');
+        const req = tx.objectStore(store).delete(key);
+        req.onsuccess = () => resolve();
+        req.onerror = e => reject(e.target.error);
+      });
+    }
+    function dbGet(store, key) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(store, 'readonly');
+        const req = tx.objectStore(store).get(key);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = e => reject(e.target.error);
+      });
+    }
+
+    // ── DATE ──
+    document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
+
+    // ── NAV ──
+    const titles = {
+      dashboard: ['Dashboard', 'Overview of your shop'],
+      inventory: ['Inventory', 'Manage products and stock'],
+      sell: ['Record Sale', 'Deduct stock and log revenue'],
+      history: ['Sales History', 'All past transactions'],
+      profile: ['Shop Profile', 'Manage your business details']
+    };
+
+    function goPage(id, btn) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      document.getElementById('page-' + id).classList.add('active');
+      btn.classList.add('active');
+      document.getElementById('page-title').textContent = titles[id][0];
+      document.getElementById('page-sub').textContent = titles[id][1];
+      if (id === 'dashboard') renderDashboard();
+      if (id === 'inventory') renderInventory();
+      if (id === 'sell') renderSellDropdown(), updateSell();
+      if (id === 'history') renderHistory();
+      if (id === 'profile') renderProfile();
+    }
+
+    // ── ALERTS ──
+    function showAlert(okId, errId, msg, type) {
+      const ok = document.getElementById(okId), err = document.getElementById(errId);
+      ok.classList.remove('show'); err.classList.remove('show');
+      if (type === 'success') { ok.textContent = '✓  ' + msg; ok.classList.add('show'); setTimeout(() => ok.classList.remove('show'), 3200); }
+      else { err.textContent = '✗  ' + msg; err.classList.add('show'); setTimeout(() => err.classList.remove('show'), 3200); }
+    }
+
+    // ── ADD ITEM ──
+    function addItem() {
+      const name = document.getElementById('i-name').value.trim();
+      const cat = document.getElementById('i-cat').value;
+      const cost = parseFloat(document.getElementById('i-cost').value);
+      const price = parseFloat(document.getElementById('i-price').value);
+      const qty = parseInt(document.getElementById('i-qty').value);
+      const low = parseInt(document.getElementById('i-low').value) || 5;
+      if (!name) return showAlert('inv-ok', 'inv-err', 'Please enter an item name.', 'error');
+      if (isNaN(cost) || cost < 0) return showAlert('inv-ok', 'inv-err', 'Enter a valid cost price.', 'error');
+      if (isNaN(price) || price < 0) return showAlert('inv-ok', 'inv-err', 'Enter a valid selling price.', 'error');
+      if (isNaN(qty) || qty < 0) return showAlert('inv-ok', 'inv-err', 'Enter a valid quantity.', 'error');
+      if (price < cost) return showAlert('inv-ok', 'inv-err', 'Selling price should not be less than cost price.', 'error');
+      const item = { id: Date.now(), name, cat, cost, price, qty, low, sold: 0 };
+      items.push(item);
+      dbPut('items', item);
+      ['i-name', 'i-cost', 'i-price', 'i-qty', 'i-low'].forEach(id => document.getElementById(id).value = '');
+      showAlert('inv-ok', 'inv-err', name + ' added to inventory.', 'success');
+      renderInventory();
+    }
+
+    // ── RENDER INVENTORY ──
+    function filterInventory(q) { filterQ = q.toLowerCase(); renderInventory(); }
+
+    function renderInventory() {
+      const filtered = items.filter(i => i.name.toLowerCase().includes(filterQ));
+      document.getElementById('inv-count').textContent = items.length + ' item' + (items.length !== 1 ? 's' : '');
+      const el = document.getElementById('inv-table');
+      if (!items.length) {
+        el.innerHTML = '<div class="empty"><div class="empty-icon">📦</div><div class="empty-text">No items yet</div><div class="empty-sub">Add your first product above</div></div>';
+        return;
+      }
+      if (!filtered.length) {
+        el.innerHTML = '<div class="empty"><div class="empty-text">No items match your search</div></div>';
+        return;
+      }
+      el.innerHTML = `<table>
+    <thead><tr>
+      <th>Item</th><th>Category</th><th>Cost</th><th>Price</th><th>Margin</th><th>Stock</th><th>Status</th><th></th>
+    </tr></thead>
+    <tbody>${filtered.map(it => {
+        const margin = it.cost > 0 ? (((it.price - it.cost) / it.cost) * 100).toFixed(0) + '%' : '—';
+        const badge = it.qty === 0
+          ? '<span class="badge badge-out">Out of stock</span>'
+          : it.qty <= it.low
+            ? '<span class="badge badge-low">⚠ Low stock</span>'
+            : '<span class="badge badge-ok">● In stock</span>';
+        return `<tr>
+        <td><div class="item-name">${it.name}</div></td>
+        <td><span class="item-cat">${it.cat}</span></td>
+        <td>₹${it.cost.toFixed(2)}</td>
+        <td>₹${it.price.toFixed(2)}</td>
+        <td style="color:var(--green);font-weight:500">${margin}</td>
+        <td>
+          <div class="stock-edit">
+            <button onclick="adjustStock(${it.id}, -1)">−</button>
+            <span style="min-width:30px;text-align:center;font-weight:500">${it.qty}</span>
+            <button onclick="adjustStock(${it.id}, 1)">+</button>
+          </div>
+        </td>
+        <td>${badge}</td>
+        <td><button class="btn-danger-sm" onclick="deleteItem(${it.id})">Remove</button></td>
+      </tr>`;
+      }).join('')}</tbody>
+  </table>`;
+    }
+
+    function adjustStock(id, delta) {
+      const it = items.find(i => i.id === id);
+      if (it) { it.qty = Math.max(0, it.qty + delta); dbPut('items', it); renderInventory(); }
+    }
+
+    function deleteItem(id) {
+      if (!confirm('Remove this item from inventory?')) return;
+      items = items.filter(i => i.id !== id);
+      dbDelete('items', id);
+      renderInventory();
+    }
+
+    // ── SELL ──
+    function renderSellDropdown() {
+      const sel = document.getElementById('s-item');
+      const inStock = items.filter(i => i.qty > 0);
+      sel.innerHTML = '<option value="">— choose an item —</option>' +
+        inStock.map(i => `<option value="${i.id}">${i.name} (${i.qty} left)</option>`).join('');
+    }
+
+    function updateSell() {
+      const id = parseInt(document.getElementById('s-item').value);
+      const it = items.find(i => i.id === id);
+      const qty = parseInt(document.getElementById('s-qty').value) || 0;
+      if (it) {
+        if (!document.getElementById('s-price').value || document.getElementById('s-price').dataset.auto === 'true') {
+          document.getElementById('s-price').value = it.price.toFixed(2);
+          document.getElementById('s-price').dataset.auto = 'true';
+        }
+      }
+      const price = parseFloat(document.getElementById('s-price').value) || 0;
+      const cost = it ? it.cost : 0;
+      document.getElementById('prev-rev').textContent = '₹' + (price * qty).toFixed(2);
+      document.getElementById('prev-profit').textContent = '₹' + ((price - cost) * qty).toFixed(2);
+      document.getElementById('prev-stock').textContent = it ? it.qty : '—';
+    }
+
+    document.getElementById('s-item').addEventListener('change', () => {
+      document.getElementById('s-price').value = '';
+      document.getElementById('s-price').dataset.auto = 'false';
+      updateSell();
+    });
+
+    function recordSale() {
+      const id = parseInt(document.getElementById('s-item').value);
+      const it = items.find(i => i.id === id);
+      const qty = parseInt(document.getElementById('s-qty').value) || 0;
+      const price = parseFloat(document.getElementById('s-price').value);
+      if (!it) return showAlert('sell-ok', 'sell-err', 'Please select an item.', 'error');
+      if (qty <= 0) return showAlert('sell-ok', 'sell-err', 'Enter a quantity of at least 1.', 'error');
+      if (qty > it.qty) return showAlert('sell-ok', 'sell-err', `Only ${it.qty} units available in stock.`, 'error');
+      if (isNaN(price) || price < 0) return showAlert('sell-ok', 'sell-err', 'Enter a valid selling price.', 'error');
+      it.qty -= qty;
+      it.sold += qty;
+      const revenue = price * qty;
+      const profit = (price - it.cost) * qty;
+      const sale = { id: Date.now(), item: it.name, qty, price, revenue, profit, cost: it.cost, time: new Date().toISOString() };
+      sales.push(sale);
+      dbPut('sales', sale);
+      dbPut('items', it);
+      showAlert('sell-ok', 'sell-err', `Sold ${qty}× ${it.name} — Revenue ₹${revenue.toFixed(2)}, Profit ₹${profit.toFixed(2)}`, 'success');
+      document.getElementById('s-item').value = '';
+      document.getElementById('s-qty').value = 1;
+      document.getElementById('s-price').value = '';
+      document.getElementById('s-price').dataset.auto = 'false';
+      updateSell();
+      renderSellDropdown();
+    }
+
+    // ── HISTORY ──
+    function renderHistory() {
+      const el = document.getElementById('history-list');
+      const total = sales.reduce((a, s) => a + s.revenue, 0);
+      document.getElementById('hist-count').textContent = sales.length + ' transaction' + (sales.length !== 1 ? 's' : '');
+      document.getElementById('hist-total').textContent = '₹' + total.toFixed(2);
+      if (!sales.length) {
+        el.innerHTML = '<div class="empty"><div class="empty-icon">🧾</div><div class="empty-text">No sales recorded yet</div></div>';
+        return;
+      }
+      el.innerHTML = [...sales].reverse().map(s => {
+        const t = new Date(s.time);
+        return `
+    <div class="history-entry">
+      <div style="display:flex;align-items:center">
+        <div class="history-dot"></div>
+        <div>
+          <div class="history-item-name">${s.item}</div>
+          <div class="history-meta">${t.toLocaleDateString('en-IN')} · ${t.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })} · Qty ${s.qty} @ ₹${s.price.toFixed(2)}</div>
+        </div>
+      </div>
+      <div>
+        <div class="history-rev">+₹${s.revenue.toFixed(2)}</div>
+        <div class="history-profit-sm">Profit: ₹${s.profit.toFixed(2)}</div>
+      </div>
+    </div>`;
+      }).join('');
+    }
+
+    // ── DASHBOARD ──
+    function renderDashboard() {
+      const rev = sales.reduce((a, s) => a + s.revenue, 0);
+      const profit = sales.reduce((a, s) => a + s.profit, 0);
+      const totalStock = items.reduce((a, i) => a + i.qty, 0);
+      const margin = rev > 0 ? ((profit / rev) * 100).toFixed(1) + '%' : '—';
+
+      document.getElementById('metrics').innerHTML = `
+    <div class="metric-card green">
+      <div class="metric-icon green">💰</div>
+      <div class="metric-label">Total Revenue</div>
+      <div class="metric-value green">₹${rev.toFixed(2)}</div>
+    </div>
+    <div class="metric-card green">
+      <div class="metric-icon green">📈</div>
+      <div class="metric-label">Total Profit</div>
+      <div class="metric-value green">₹${profit.toFixed(2)}</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-icon amber">%</div>
+      <div class="metric-label">Profit Margin</div>
+      <div class="metric-value amber">${margin}</div>
+    </div>
+    <div class="metric-card blue">
+      <div class="metric-icon blue">🧾</div>
+      <div class="metric-label">Sales Made</div>
+      <div class="metric-value">${sales.length}</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-icon amber">📦</div>
+      <div class="metric-label">Items in Stock</div>
+      <div class="metric-value">${totalStock}</div>
+    </div>
+  `;
+
+      const itemMap = {};
+      sales.forEach(s => { itemMap[s.item] = (itemMap[s.item] || 0) + s.qty; });
+      const sorted = Object.entries(itemMap).sort((a, b) => b[1] - a[1]).slice(0, 6);
+      const maxQ = sorted[0]?.[1] || 1;
+      document.getElementById('top-items').innerHTML = sorted.length
+        ? sorted.map(([name, qty]) => `
+      <div class="bar-row">
+        <div class="bar-name" title="${name}">${name}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.round(qty / maxQ * 100)}%"></div></div>
+        <div class="bar-qty">${qty} sold</div>
+      </div>`).join('')
+        : '<div class="empty"><div class="empty-icon">📊</div><div class="empty-text">No sales yet</div></div>';
+
+      const low = items.filter(i => i.qty > 0 && i.qty <= i.low);
+      const out = items.filter(i => i.qty === 0);
+      const alerts = [...out.map(i => ({ ...i, type: 'out' })), ...low.map(i => ({ ...i, type: 'low' }))];
+      document.getElementById('low-stock').innerHTML = alerts.length
+        ? alerts.map(i => `
+      <div class="low-row">
+        <div class="low-name">${i.name}</div>
+        ${i.type === 'out'
+            ? '<span class="badge badge-out">Out of stock</span>'
+            : `<span class="badge badge-low">${i.qty} left</span>`}
+      </div>`).join('')
+        : '<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">All items well stocked</div></div>';
+    }
+
+    // ── PROFILE ──
+    function previewLogo(input) {
+      const file = input.files[0];
+      if (!file) return;
+      if (file.size > 200 * 1024) { showAlert('prof-ok', 'prof-err', 'Logo file is too large (max 200KB).', 'error'); return; }
+      const reader = new FileReader();
+      reader.onload = e => {
+        logoDataUrl = e.target.result;
+        document.getElementById('logo-preview').innerHTML = `<img src="${logoDataUrl}">`;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function saveProfile() {
+      const name = document.getElementById('p-name').value.trim();
+      if (!name) return showAlert('prof-ok', 'prof-err', 'Shop name is required.', 'error');
+      shopProfile = {
+        id: 'shop',
+        name,
+        owner: document.getElementById('p-owner').value.trim(),
+        gst: document.getElementById('p-gst').value.trim().toUpperCase(),
+        reg: document.getElementById('p-reg').value.trim(),
+        phone: document.getElementById('p-phone').value.trim(),
+        email: document.getElementById('p-email').value.trim(),
+        address: document.getElementById('p-address').value.trim(),
+        logo: logoDataUrl || ''
+      };
+      dbPut('profile', shopProfile);
+      showAlert('prof-ok', 'prof-err', 'Profile saved successfully!', 'success');
+      renderProfile();
+      updateSidebarName();
+    }
+
+    function renderProfile() {
+      const el = document.getElementById('profile-display');
+      if (!shopProfile) {
+        el.innerHTML = '<div class="profile-display"><div class="card"><div class="profile-empty"><div class="profile-empty-icon">🏪</div><div class="profile-empty-text">No profile set up yet</div><div class="profile-empty-sub">Fill in the form below to get started</div></div></div></div>';
+        return;
+      }
+      const p = shopProfile;
+      const logoHtml = p.logo ? `<img src="${p.logo}">` : '🏪';
+      const fields = [
+        p.gst ? ['GSTIN', p.gst] : null,
+        p.reg ? ['Registration No.', p.reg] : null,
+        p.phone ? ['Phone', p.phone] : null,
+        p.email ? ['Email', p.email] : null,
+        p.address ? ['Address', p.address] : null
+      ].filter(Boolean);
+      el.innerHTML = `<div class="profile-display"><div class="profile-card-visual">
+    <div class="profile-card-logo">${logoHtml}</div>
+    <div class="profile-card-shopname">${p.name}</div>
+    ${p.owner ? `<div class="profile-card-owner">Proprietor: ${p.owner}</div>` : ''}
+    ${fields.length ? `<div class="profile-card-grid">
+      ${fields.map((f, i) => `${i > 0 && i % 2 === 0 ? '<div class="profile-card-divider"></div>' : ''}<div class="profile-card-field"><div class="profile-card-label">${f[0]}</div><div class="profile-card-value">${f[1]}</div></div>`).join('')}
+    </div>` : ''}
+  </div></div>`;
+      // Fill form fields with saved values
+      document.getElementById('p-name').value = p.name;
+      document.getElementById('p-owner').value = p.owner || '';
+      document.getElementById('p-gst').value = p.gst || '';
+      document.getElementById('p-reg').value = p.reg || '';
+      document.getElementById('p-phone').value = p.phone || '';
+      document.getElementById('p-email').value = p.email || '';
+      document.getElementById('p-address').value = p.address || '';
+      if (p.logo) {
+        logoDataUrl = p.logo;
+        document.getElementById('logo-preview').innerHTML = `<img src="${p.logo}">`;
+      }
+    }
+
+    function updateSidebarName() {
+      const el = document.getElementById('sidebar-shop-name');
+      el.textContent = shopProfile ? shopProfile.name : '© 2025 PaperTrail';
+    }
+
+    // ── INIT (load from IndexedDB) ──
+    async function initApp() {
+      await dbOpen();
+      items = await dbGetAll('items');
+      sales = await dbGetAll('sales');
+      shopProfile = (await dbGet('profile', 'shop')) || null;
+      updateSidebarName();
+      renderDashboard();
+    }
+
+    initApp();
+  </script>
+</body>
+
+</html>
